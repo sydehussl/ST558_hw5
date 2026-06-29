@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "CHRIS's_version.html",
+    "href": "CHRIS's_version.html",
+    "title": "CHRIS’s_version",
+    "section": "",
+    "text": "lapply() applies a function to every element in a list/vector/data frame and returns a list. Equivalently, we could use map() from the purrr package.\nIf we call ?lapply, we can see that it’s called with lapply(X, FUN, ...), where ... is optional arguments passed to the function FUN. Hence, we’d pass the following:\n\n\nlapply(numeric_matrix, cor, method = \"kendall\")\n\n\nCompared to baseR xapply() functions, purrr offer greater consistency in syntax regarding the selection and order of arguments each function takes. Another benefit is less ambiguity in the type of object returned; baseR functions may return different types based on the type of the input vector (like for sapply()).\nA side effect function is a function which doesn’t simply return a transformation of the inputs. They may have no return at all. For example, the plot function takes data as an input and returns a plot object.\nWhen functions are executed in R, a temporary environment is created. This means that ordinarily invalid variable names do not conflict with function names, because those functions are (generally) not part of the temporary environment."
+  },
+  {
+    "objectID": "JON's_version.html",
+    "href": "JON's_version.html",
+    "title": "JON’s_version",
+    "section": "",
+    "text": "Jon’s work goes here"
+  },
+  {
+    "objectID": "BEN's_version.html",
+    "href": "BEN's_version.html",
+    "title": "BEN’s_version",
+    "section": "",
+    "text": "Ben’s work goes here"
+  },
+  {
+    "objectID": "CHRIS's_version.html#rmse-function",
+    "href": "CHRIS's_version.html#rmse-function",
+    "title": "CHRIS’s_version",
+    "section": "RMSE Function:",
+    "text": "RMSE Function:\nWe just need to validate the user’s input and return the RMSE. The elipses ... allow for the user to pass additional arguments to the mean() function.\n\ngetRMSE &lt;- function(response, predicted, ...) {\n  # data validation\n  if(!is.vector(response)) stop(\"Error: Reponse isn't a vector\")\n  if(!is.atomic(response)) stop(\"Error: Reponse isn't an atomic vector\")\n  if(!is.numeric(response)) stop(\"Error: Response isn't a numeric vector\")\n  if(!is.vector(predicted)) stop(\"Error: Predicted isn't a vector\")\n  if(!is.atomic(predicted)) stop(\"Error: Predicted isn't an atomic vector\")\n  if(!is.numeric(predicted)) stop(\"Error: Predicted isn't a numeric vector\")\n  if(length(response) != length(predicted)) stop(\"Error: Reponse and prediction vectors have unequal lengths\")\n  \n  # return rmse\n  sqrt(mean((response - predicted)**2, ...))\n}"
+  },
+  {
+    "objectID": "CHRIS's_version.html#generating-rmse-test-data",
+    "href": "CHRIS's_version.html#generating-rmse-test-data",
+    "title": "CHRIS’s_version",
+    "section": "Generating RMSE Test Data:",
+    "text": "Generating RMSE Test Data:\nLet’s run the given code to generate test data:\n\nset.seed(10)\nn &lt;- 100\nx &lt;- runif(n)\nresp &lt;- 3 + 10 * x + rnorm(n)\npred &lt;- predict(lm(resp ~ x), data.frame(x))\n\nAnd test the RMSE function with it:\n\ngetRMSE(resp, pred)\n\n[1] 0.9581677\n\n\nSeems legit. We can replace a few values with NA and test passing the na.rm = TRUE argument:\n\nmissing_idx &lt;- sample(length(resp), size = 2)\nresp[missing_idx] &lt;- NA_real_\n\ngetRMSE(resp, pred)\n\n[1] NA\n\ngetRMSE(resp, pred, na.rm = TRUE)\n\n[1] 0.9659906\n\n\nGreat! It looks like we can pass arguments to the mean() function!"
+  },
+  {
+    "objectID": "CHRIS's_version.html#mae-function",
+    "href": "CHRIS's_version.html#mae-function",
+    "title": "CHRIS’s_version",
+    "section": "MAE Function",
+    "text": "MAE Function\nThe getMAE() function is very similar to the previous function:\n\ngetMAE &lt;- function(response, predicted, ...) {\n  # data validation\n  if(!is.vector(response)) stop(\"Error: Reponse isn't a vector\")\n  if(!is.atomic(response)) stop(\"Error: Reponse isn't an atomic vector\")\n  if(!is.numeric(response)) stop(\"Error: Response isn't a numeric vector\")\n  if(!is.vector(predicted)) stop(\"Error: Predicted isn't a vector\")\n  if(!is.atomic(predicted)) stop(\"Error: Predicted isn't an atomic vector\")\n  if(!is.numeric(predicted)) stop(\"Error: Predicted isn't a numeric vector\")\n  if(length(response) != length(predicted)) stop(\"Error: Reponse and prediction vectors have unequal lengths\")\n  \n  # return mae\n  sqrt(mean(abs(response - predicted), ...))\n}\n\nTesting it:\n\nset.seed(10)\nn &lt;- 100\nx &lt;- runif(n)\nresp &lt;- 3 + 10 * x + rnorm(n)\npred &lt;- predict(lm(resp ~ x), data.frame(x))\n\ngetMAE(resp, pred)\n\n[1] 0.9030933\n\n\nSweet, now with missing data:\n\nmissing_idx &lt;- sample(length(resp), size = 2)\nresp[missing_idx] &lt;- NA_real_\n\ngetRMSE(resp, pred)\n\n[1] NA\n\ngetRMSE(resp, pred, na.rm = TRUE)\n\n[1] 0.9659906\n\n\nLooking good!"
+  },
+  {
+    "objectID": "CHRIS's_version.html#wrapper-function",
+    "href": "CHRIS's_version.html#wrapper-function",
+    "title": "CHRIS’s_version",
+    "section": "Wrapper Function",
+    "text": "Wrapper Function\nLast, we write a wrapper function to call one or both of the helper functions we just wrote:\n\ngetMetric &lt;- function(resp, pred, metrics, ...) {\n  valid_metrics &lt;- c(\"RMSE\", \"MAE\")\n  \n  if(length(setdiff(metrics, valid_metrics)) &gt; 0) {\n    stop(\"Error: Invalid metrics specified. Specify at least one of: RMSE, MAE\")\n  }\n  \n  output &lt;- numeric()\n  \n  if(\"RMSE\" %in% metrics) {\n    output[\"RMSE\"] &lt;- getRMSE(resp, pred, ...)\n  }\n  if(\"MAE\" %in% metrics) {\n    output[\"MAE\"] &lt;- getMAE(resp, pred, ...)\n  }\n  \n  output\n}\n\nAgain, generate data to test:\n\nset.seed(10)\nn &lt;- 100\nx &lt;- runif(n)\nresp &lt;- 3 + 10 * x + rnorm(n)\npred &lt;- predict(lm(resp ~ x), data.frame(x))\n\nTest querying metrics separately and together:\n\ngetMetric(resp, pred, \"MAE\")\n\n      MAE \n0.9030933 \n\ngetMetric(resp, pred, \"RMSE\")\n\n     RMSE \n0.9581677 \n\ngetMetric(resp, pred, c(\"MAE\", \"RMSE\"))\n\n     RMSE       MAE \n0.9581677 0.9030933 \n\n\nLet’s add some missingness and retest:\n\nmissing_idx &lt;- sample(length(resp), size = 2)\nresp[missing_idx] &lt;- NA_real_\n\ngetMetric(resp, pred, c(\"MAE\", \"RMSE\"))\n\nRMSE  MAE \n  NA   NA \n\ngetMetric(resp, pred, c(\"MAE\", \"RMSE\"), na.rm = TRUE)\n\n     RMSE       MAE \n0.9659906 0.9078670 \n\n\nExcellent! Lastly, we should see what happens if we pass a data frame instead of a vector:\n\nresp_df &lt;- data.frame(resp)\n\ngetMetric(resp_df, pred, \"MAE\")\n\nError in getMAE(resp, pred, ...): Error: Reponse isn't a vector\n\n\nSweet! The data validation we did earlier still works when called in the wrapper function."
+  }
+]
