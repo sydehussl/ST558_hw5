@@ -43,7 +43,7 @@ getRMSE <- function(response, prediction, ...) {  # ... will allow for additiona
 }
 ```
 
-Now lets run this code to test our function
+Generate response and prediction vectors. We'll use these to test our function.
 
 ```{r}
 # generate our prediction and response vectors
@@ -70,4 +70,25 @@ Test the function
 ```{r}
 getRMSE(response = resp, prediction = pred, na.rm = TRUE) # make sure you specify na.rm = TRUE
 ```
+
+
+Now lets write a function that will calculate MAE and call it `getMAE()`.
+
+```{r}
+getMAE <- function(response, prediction, ...) {
+  mean(abs(response - prediction), ...)
+}
+```
+
+
+Generate response and prediction vectors. We'll use these to test our function.
+
+```{r}
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
 
