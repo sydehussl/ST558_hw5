@@ -59,13 +59,13 @@ pred <- predict(lm(resp ~ x), data.frame(x))
 getRMSE(response = resp, prediction = pred)
 ```
 
-Add some `NA` values to make sure our optional `...` argument works
+Add some `NA` values to make sure our optional `...` argument works.
 
 ```{r}
 resp[c(17, 49)] <- NA_real_  # 49 and 17 were chosen randomly. Feel free to change
 ```
 
-Test the function
+Test the function.
 
 ```{r}
 getRMSE(response = resp, prediction = pred, na.rm = TRUE) # make sure you specify na.rm = TRUE
@@ -92,3 +92,89 @@ pred <- predict(lm(resp ~ x), data.frame(x))
 ```
 
 
+Test the function.
+
+```{r}
+getMAE(response = resp, prediction = pred)
+```
+
+Replace two values in `resp` with `NA` to test our additional `...` argument
+
+```{r}
+resp[c(2, 37)] <- NA_real_  # again, 2 and 37 were chosen randomly by me
+```
+
+
+Test the function.
+
+```{r}
+getMAE(response = resp, prediction = pred, na.rm = TRUE)  # make sure to specify na.rm = TRUE
+```
+
+
+Now let's write a wrapper function that calls our helper functions, `getRMSE()` and `getMAE()`. By default, the function will return both metrics, but we can specify which metric(s) we want using a character vector. We'll also check that the inputs are numeric atomic vectors before proceeding.
+
+```{r}
+getMetrics <- function(response, prediction,
+                       metrics = c("RMSE", "MAE"), ...) {
+
+  # check that both inputs are numeric atomic vectors
+  if (!(is.vector(response) && is.atomic(response) && is.numeric(response) &&
+        is.vector(prediction) && is.atomic(prediction) && is.numeric(prediction))) {
+    message("Both response and prediction must be numeric atomic vectors.")
+    return(invisible(NULL))
+  }
+
+  results <- list()
+
+  if ("RMSE" %in% metrics) {
+    results$RMSE <- getRMSE(response, prediction, ...)
+  }
+
+  if ("MAE" %in% metrics) {
+    results$MAE <- getMAE(response, prediction, ...)
+  }
+
+  return(results)
+}
+```
+
+Generate response and prediction vectors.
+
+```{r}
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
+Test the function by requesting each metric individually and then both.
+
+```{r}
+getMetrics(response = resp, prediction = pred, metrics = "RMSE")
+getMetrics(response = resp, prediction = pred, metrics = "MAE")
+getMetrics(response = resp, prediction = pred)
+```
+
+Now replace two response values with `NA`.
+
+```{r}
+resp[c(12, 84)] <- NA_real_
+```
+
+Test the function again.
+
+```{r}
+getMetrics(response = resp, prediction = pred, na.rm = TRUE)
+```
+
+Finally, test the function by passing incorrect data.
+
+```{r}
+bad_data <- data.frame(resp = resp)
+
+getMetrics(response = bad_data, prediction = pred)
+```
+
+Great! Everything seems to work.
