@@ -4,3 +4,177 @@ format: html
 ---
 
 Ben's work goes here
+
+# Task 1
+
+1.  What is the purpose of the lapply() function? What is the equivalent purrr function?
+
+- The `lapply()` function in base R is used to apply a function to every element of a list (or vector) and return the results as a list. It helps you avoid writing explicit for loops and makes your code more concise. The equivalent function in the `purrr` package is `map()`.
+
+2.  Suppose we have a list called `my_list`. Each element of the list is a numeric data frame (all columns are numeric). We want use `lapply()` to run the code `cor(numeric_matrix, method = "kendall")` on each element of the list. Write code to do this below! (I’m really trying to ask you how you specify `method = "kendall"` when calling `lapply()`)
+
+```{r, eval = FALSE}
+custom_my_list <- lapply(X = my_list, FUN = cor, method = "kendall")
+```
+
+3.  What are two advantages of using purrr functions instead of the BaseR apply family?
+
+- More consistent and readable syntax.
+
+  - The `purrr` functions all follow a consistent naming convention (`map()`, `map_dbl()`, `map_chr()`, `map_df()`, etc.), making them easier to learn and use than the various Base R functions (`lapply()`, `sapply()`, `apply()`, etc.).
+
+- Type-safe outputs.
+
+  - Functions like `map_dbl()`, `map_int()`, `map_chr()`, and `map_lgl()` guarantee the type of the output. If the function cannot produce the requested type, `purrr` throws an error instead of silently simplifying the result, making code more predictable and easier to debug.
+
+4.  What is a side-effect function?
+
+- A side-effect function performs an action such as printing, writing files, or saving plots, rather than returning a value
+
+5.  You can safely name a variable `sd` inside a function because of lexical scoping. When you assign a value to a variable, it is stored in the function's local environment, protecting it from built-in functions outside the function scope, such as the `sd()` function.
+
+# Task 2
+
+We want to write a `getRMSE()` function that will calculate the RMSE when given a *vector* of responses and a *vector* of predictions. We also want to allow for additional arguments in the `mean()` argument so that we can remove any `NA` values
+
+```{r}
+getRMSE <- function(response, prediction, ...) {  # ... will allow for additional arguments
+  sqrt(mean((response - prediction)^2, ...))
+}
+```
+
+Generate response and prediction vectors. We'll use these to test our function.
+
+```{r}
+# generate our prediction and response vectors
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
+```{r}
+# test the function
+getRMSE(response = resp, prediction = pred)
+```
+
+Add some `NA` values to make sure our optional `...` argument works.
+
+```{r}
+resp[c(17, 49)] <- NA_real_  # 49 and 17 were chosen randomly. Feel free to change
+```
+
+Test the function.
+
+```{r}
+getRMSE(response = resp, prediction = pred, na.rm = TRUE) # make sure you specify na.rm = TRUE
+```
+
+
+Now lets write a function that will calculate MAE and call it `getMAE()`.
+
+```{r}
+getMAE <- function(response, prediction, ...) {
+  mean(abs(response - prediction), ...)
+}
+```
+
+
+Generate response and prediction vectors. We'll use these to test our function.
+
+```{r}
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
+
+Test the function.
+
+```{r}
+getMAE(response = resp, prediction = pred)
+```
+
+Replace two values in `resp` with `NA` to test our additional `...` argument
+
+```{r}
+resp[c(2, 37)] <- NA_real_  # again, 2 and 37 were chosen randomly by me
+```
+
+
+Test the function.
+
+```{r}
+getMAE(response = resp, prediction = pred, na.rm = TRUE)  # make sure to specify na.rm = TRUE
+```
+
+
+Now let's write a wrapper function that calls our helper functions, `getRMSE()` and `getMAE()`. By default, the function will return both metrics, but we can specify which metric(s) we want using a character vector. We'll also check that the inputs are numeric atomic vectors before proceeding.
+
+```{r}
+getMetrics <- function(response, prediction,
+                       metrics = c("RMSE", "MAE"), ...) {
+
+  # check that both inputs are numeric atomic vectors
+  if (!(is.vector(response) && is.atomic(response) && is.numeric(response) &&
+        is.vector(prediction) && is.atomic(prediction) && is.numeric(prediction))) {
+    message("Both response and prediction must be numeric atomic vectors.")
+    return(invisible(NULL))
+  }
+
+  results <- list()
+
+  if ("RMSE" %in% metrics) {
+    results$RMSE <- getRMSE(response, prediction, ...)
+  }
+
+  if ("MAE" %in% metrics) {
+    results$MAE <- getMAE(response, prediction, ...)
+  }
+
+  return(results)
+}
+```
+
+Generate response and prediction vectors.
+
+```{r}
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
+Test the function by requesting each metric individually and then both.
+
+```{r}
+getMetrics(response = resp, prediction = pred, metrics = "RMSE")
+getMetrics(response = resp, prediction = pred, metrics = "MAE")
+getMetrics(response = resp, prediction = pred)
+```
+
+Now replace two response values with `NA`.
+
+```{r}
+resp[c(12, 84)] <- NA_real_
+```
+
+Test the function again.
+
+```{r}
+getMetrics(response = resp, prediction = pred, na.rm = TRUE)
+```
+
+Finally, test the function by passing incorrect data.
+
+```{r}
+bad_data <- data.frame(resp = resp)
+
+getMetrics(response = bad_data, prediction = pred)
+```
+
+Great! Everything seems to work.
