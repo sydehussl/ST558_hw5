@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>CHRIS’s_version</title>
+<title>ST 558 HW 5 - Final Version</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -136,7 +136,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">CHRIS’s_version</h1>
+<h1 class="title">ST 558 HW 5 - Final Version</h1>
 </div>
 
 
@@ -156,16 +156,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="task-1-conceptual-questions" class="level1">
 <h1>Task 1: Conceptual Questions:</h1>
 <ol type="1">
-<li><code>lapply()</code> applies a function to every element in a list/vector/data frame and returns a list. Equivalently, we could use <code>map()</code> from the <code>purrr</code> package.</li>
+<li><code>lapply()</code> applies a function to every element in a list/vector/data frame and returns a list. It helps you avoid writing explicit for loops and makes your code more concise. Equivalently, we could use <code>map()</code> from the <code>purrr</code> package.</li>
 <li>If we call <code>?lapply</code>, we can see that it’s called with <code>lapply(X, FUN, ...)</code>, where <code>...</code> is optional arguments passed to the function <code>FUN</code>. Hence, we’d pass the following:</li>
 </ol>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(numeric_matrix, cor, <span class="at">method =</span> <span class="st">"kendall"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <ol start="3" type="1">
-<li>Compared to baseR <code>xapply()</code> functions, <code>purrr</code> offer greater <strong>consistency in syntax</strong> regarding the selection and order of arguments each function takes. Another benefit is <strong>less ambiguity in the type of object returned</strong>; baseR functions may return different types based on the type of the input vector (like for <code>sapply()</code>).</li>
-<li>A side effect function is a function which doesn’t simply return a transformation of the inputs. They may have no return at all. For example, the plot function takes data as an input and returns a plot object.</li>
-<li>When functions are executed in R, a temporary environment is created. This means that ordinarily invalid variable names do not conflict with function names, because those functions are (generally) not part of the temporary environment.</li>
+<li>Compared to baseR <code>xapply()</code> functions, <code>purrr</code> functions:</li>
+</ol>
+<ul>
+<li>Offer greater <strong>consistency in syntax</strong> regarding the selection and order of arguments each function takes.</li>
+<li>Have <strong>less ambiguity in the type of object returned</strong>; baseR functions may return different types based on the type of the input vector (like for <code>sapply()</code>).</li>
+</ul>
+<ol start="4" type="1">
+<li>A side effect function is a function which <strong>doesn’t simply return a transformation of the inputs</strong>. They may have no return at all. For example, the plot function takes data as an input and returns a plot object.</li>
+<li><strong>Lexical scoping</strong> prevents variable names within functions from conflicting with built-in functions. When functions are executed in R, a temporary environment is created. This allows the use of object names that would ordinarily cause problems, because the conflicting functions are (generally) not part of the temporary environment.</li>
 </ol>
 </section>
 <section id="task-2-writing-functions" class="level1">
